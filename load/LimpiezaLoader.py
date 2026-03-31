@@ -1,6 +1,6 @@
 from pathlib import Path
 import sqlite3
-from Config.LimpiezaConfig import LimpiezaConfig
+from config.LimpiezaConfig import LimpiezaConfig
 
 
 class LimpiezaLoader:
@@ -18,6 +18,16 @@ class LimpiezaLoader:
             print(f"Datos guardados en {p}")
         except Exception as e:
             print(f"Error al guardar datos en CSV: {e}")
+
+    def to_excel(self, output_path: str, index: bool = False):
+        """Guarda el DataFrame en Excel; crea la carpeta si es necesario."""
+        try:
+            p = Path(output_path)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            self.df.to_excel(p, index=index)
+            print(f"Datos guardados en {p}")
+        except Exception as e:
+            print(f"Error al guardar datos en Excel: {e}")
 
     def to_sqlite(self, db_path: str = None, table_name: str = None, if_exists: str = 'replace'):
         """Guarda el DataFrame en una base de datos SQLite (crea carpeta si es necesario)."""

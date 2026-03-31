@@ -1,26 +1,29 @@
-import requests
 import pandas as pd
-import numpy as np
 
 class LimpiezaExtract:  
 
-    def __init__(self, csv_path):
-        self.csv = csv_path
+    def __init__(self, file_path):
+        self.file_path = file_path
         self.data = None
 
     def queries(self):
-        # Intentar leer con distintos encodings para evitar errores de decoding
+        # Soporta CSV y Excel (XLS/XLSX) de forma transparente
         try:
-            self.data = pd.read_csv(self.csv, encoding='utf-8', low_memory=False)
-        except UnicodeDecodeError:
-            try:
-                self.data = pd.read_csv(self.csv, encoding='cp1252', low_memory=False)
-            except Exception:
-                # último recurso
-                self.data = pd.read_csv(self.csv, encoding='latin-1', low_memory=False)
+            lower_path = str(self.file_path).lower()
+            if lower_path.endswith(('.xlsx', '.xls')):
+                self.data = pd.read_excel(self.file_path)
+            elif lower_path.endswith('.csv'):
+                try:
+                    self.data = pd.read_csv(self.file_path, encoding='utf-8', low_memory=False)
+                except UnicodeDecodeError:
+                    try:
+                        self.data = pd.read_csv(self.file_path, encoding='cp1252', low_memory=False)
+                    except Exception:
+                        self.data = pd.read_csv(self.file_path, encoding='latin-1', low_memory=False)
+            else:
+                raise ValueError('Formato no soportado. Usa .csv, .xls o .xlsx')
         except Exception as e:
-            # Propagar con mensaje más claro
-            raise RuntimeError(f"No se pudo leer el CSV '{self.csv}': {e}")
+            raise RuntimeError(f"No se pudo leer el archivo '{self.file_path}': {e}")
 
     def response(self):
         return self.data.head(5)
