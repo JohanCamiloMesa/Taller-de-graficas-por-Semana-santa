@@ -1,138 +1,106 @@
-# Análisis de Datos de Siniestros - Taller de Gráficas
+# Analisis de Datos de Siniestros - Taller de Graficas
 
-Un proyecto integral que combina un pipeline ETL en Python con un análisis exploratorio de datos en R, enfocado en la visualización y análisis de reportes de siniestros.
+Proyecto para limpiar un archivo de siniestros con Python y explorar los datos con graficas en R. El flujo principal genera una version depurada del dataset y despues la usa en un taller de analisis visual.
 
----
+## Descripcion general
 
-## 📋 Descripción del Proyecto
+El repositorio contiene tres piezas principales:
 
-Este proyecto implementa un sistema completo de extracción, transformación y carga (ETL) de datos de siniestros, seguido por un análisis exploratorio con 5 gráficas seleccionadas estratégicamente para resolver un problema de análisis específico.
+- Un pipeline ETL en Python que lee un archivo Excel o CSV, limpia filas vacias y exporta resultados a CSV, Excel y SQLite.
+- Un script en R para el taller principal, con 5 graficas comentadas y una conclusion final.
+- Un dashboard en R, opcional, para exploracion interactiva de los mismos datos.
 
-**Problema de análisis planteado:**  
-*¿Cuáles son los patrones de severidad temporal y geográfica en los siniestros reportados, y qué relación existe entre la hora del día, el día de la semana y la severidad de los incidentes?*
+La pregunta de analisis que guia el taller es identificar en que localidades y en que momentos se concentran los siniestros, y como cambia su severidad segun la hora y el dia de la semana.
 
----
+## Estructura
 
-## 🏗️ Estructura del Proyecto
-
-```
+```text
 Taller-de-graficas-por-Semana-santa/
-│
-├── main.py                          # Orquestador principal del pipeline ETL
-├── graficas.r                        # Ejemplos de 15 tipos de gráficas en R
-├── taller.r                          # Análisis completo: 5 gráficas comentadas + conclusiones
-├── README.md                         # Este archivo
-├── requeriments.txt                  # Dependencias de Python
-├── LICENSE                           # Licencia MIT
-│
+├── main.py
+├── dashboard.r
+├── graficas.r
+├── taller.r
+├── README.md
+├── requeriments.txt
+├── LICENSE
 ├── config/
-│   └── LimpiezaConfig.py            # Configuración de rutas y parámetros del ETL
-│
+│   └── LimpiezaConfig.py
 ├── extract/
-│   ├── LimpiezaExtract.py           # Extracción de datos desde Excel/CSV
+│   ├── LimpiezaExtract.py
 │   └── files/
-│       └── 3.1 NMERO DE SINIESTROS_limpio.csv  # Dataset limpio (salida principal)
-│
+│       ├── 3.1 NMERO DE SINIESTROS.XLSX
+│       ├── 3.1 NMERO DE SINIESTROS_limpio.csv
+│       ├── 3.1 NMERO DE SINIESTROS_limpio.xlsx
+│       └── Limpieza.db
 ├── transform/
-│   └── LimpiezaTransform.py         # Transformación y limpieza de datos
-│
-├── load/
-│   └── LimpiezaLoader.py            # Exportación a CSV, Excel y SQLite
-│
-└── .vscode/
-    ├── launch.json                  # Configuración de depuración
-    └── settings.json                # Configuración del editor
+│   └── LimpiezaTransform.py
+└── load/
+    └── LimpiezaLoader.py
 ```
 
----
+## Que hace cada archivo
 
-## 📊 Componentes del Proyecto
+`main.py` ejecuta el flujo completo: carga el archivo original, aplica la limpieza y guarda las salidas limpias.
 
-### 1. Pipeline ETL (Python)
+`extract/LimpiezaExtract.py` lee archivos `.xlsx`, `.xls` o `.csv` y prueba varias codificaciones si el origen es CSV.
 
-#### **Extracción (Extract)**
-- Lee datos desde archivos Excel (.xlsx) o CSV
-- Soporta múltiples codificaciones (UTF-8, CP1252, Latin-1)
-- Manejo automático de errores de lectura
+`transform/LimpiezaTransform.py` elimina filas completamente vacias, normaliza valores tipo `n/a`, `sin dato` o `null`, y deja un resumen de limpieza en `DataFrame.attrs['cleaning_summary']`.
 
-#### **Transformación (Transform)**
-- Limpia filas y columnas vacías
-- Normaliza valores faltantes (`n/a`, `sin dato`, `null`, etc.)
-- Valida integridad de datos
-- Genera resumen de limpieza con estadísticas
+`load/LimpiezaLoader.py` exporta el resultado a CSV, Excel y SQLite.
 
-#### **Carga (Load)**
-- Exporta datos limpios a:
-  - CSV (`3.1 NMERO DE SINIESTROS_limpio.csv`)
-  - Excel (`3.1 NMERO DE SINIESTROS_limpio.xlsx`)
-  - Base de datos SQLite (`Limpieza.db`)
+`taller.r` genera el analisis principal con 5 graficas:
 
-### 2. Análisis Exploratorio (R - `taller.r`)
+1. Barras por localidad.
+2. Lineas de evolucion mensual por ano.
+3. Mapa de calor dia vs hora.
+4. Boxplot de hora por gravedad.
+5. Barras apiladas proporcionales de severidad por dia.
 
-**5 Gráficas Seleccionadas:**
+`graficas.r` es una galeria de ejemplos con varios tipos de graficas en R.
 
-1. **Gráfica de Barras: Siniestros por Localidad**
-   - **Por qué:** Identifica dónde ocurren más siniestros
-   - **Método:** Agregación por localidad y ordenamiento descendente
+`dashboard.r` crea un dashboard interactivo con Shiny, Plotly y Leaflet.
 
-2. **Gráfica de Líneas: Evolución Temporal Mensual**
-   - **Por qué:** Detecta tendencias estacionales y cambios en el tiempo
-   - **Método:** Series de tiempo por mes y año
-
-3. **Mapa de Calor: Día de Semana vs Hora**
-   - **Por qué:** Revela patrones frecuenciales (qué día/hora hay más siniestros)
-   - **Método:** Matriz de densidad con degradado de colores
-
-4. **Boxplot: Distribución de Severidad por Hora**
-   - **Por qué:** Compara distribuciones y detecta outliers
-   - **Método:** Análisis de cuartiles de severidad por rangos horarios
-
-5. **Gráfica de Barras Apiladas: Severidad por Día de Semana**
-   - **Por qué:** Muestra composición de severidades en cada día
-   - **Método:** Proporciones apiladas para ver el mix de severidad
-
----
-
-## 📦 Requisitos
+## Requisitos
 
 ### Python
-- Python 3.8+
+
+- Python 3.8 o superior
 - pandas
 - openpyxl
 
 ### R
-- R 4.0+
-- Librerías: base (nativas de R)
 
----
+- R 4.0 o superior
+- ggplot2
+- reshape2
+- corrplot
 
-## 🚀 Instalación
+### Para el dashboard opcional
 
-### 1. Clonar o descargar el repositorio
+- shiny
+- shinydashboard
+- dplyr
+- plotly
+- leaflet
+- leaflet.extras
+
+## Instalacion
+
+### 1. Abrir el proyecto
 
 ```bash
 cd "Taller-de-graficas-por-Semana-santa"
 ```
 
-### 2. Configurar entorno Python
-
-#### Opción A: Virtual Environment
+### 2. Crear y activar un entorno Python
 
 ```bash
-# Crear entorno virtual
 python -m venv .venv
-
-# Activar (Windows)
 .\.venv\Scripts\Activate.ps1
-
-# Activar (Mac/Linux)
-source .venv/bin/activate
-
-# Instalar dependencias
 pip install -r requeriments.txt
 ```
 
-#### Opción B: Conda
+Si prefieres Conda:
 
 ```bash
 conda create -n taller-graficas python=3.10
@@ -140,151 +108,91 @@ conda activate taller-graficas
 pip install -r requeriments.txt
 ```
 
-### 3. Instalar R (si no lo tienes)
+### 3. Instalar R
 
-Descarga desde [https://www.r-project.org/](https://www.r-project.org/)
+Descargalo desde https://www.r-project.org/ si no lo tienes instalado.
 
----
+## Uso
 
-## 🔧 Uso
-
-### Opción 1: Ejecutar el Pipeline ETL Completo
+### Ejecutar el ETL
 
 ```bash
-# Asegúrate de que el entorno virtual/conda esté activado
 python main.py
 ```
 
-**Salida esperada:**
-- Dataset limpio: `extract/files/3.1 NMERO DE SINIESTROS_limpio.csv`
-- Dataset Excel: `extract/files/3.1 NMERO DE SINIESTROS_limpio.xlsx`
-- Base SQLite: `extract/files/Limpieza.db`
+Esto genera estas salidas:
 
-### Opción 2: Ejecutar Análisis en R
+- `extract/files/3.1 NMERO DE SINIESTROS_limpio.csv`
+- `extract/files/3.1 NMERO DE SINIESTROS_limpio.xlsx`
+- `extract/files/Limpieza.db`
 
-#### En RStudio
+La tabla SQLite se guarda como `siniestros_limpios`.
 
-```r
-# Abre RStudio
-# Ve a File > Open File
-# Selecciona: taller.r
-# Ejecuta: Ctrl + A, Ctrl + Enter (o Run)
-```
-
-#### En VS Code + R Extension
-
-```bash
-# Abre el archivo taller.r
-# Selecciona todo: Ctrl + A
-# Ejecuta: Ctrl + Enter
-```
-
-#### En terminal (R directamente)
+### Ejecutar el taller en R
 
 ```bash
 Rscript taller.r
 ```
 
-### Opción 3: Ver Ejemplos de 15 Tipos de Gráficas
+### Ver la galeria de ejemplos
 
 ```bash
 Rscript graficas.r
 ```
 
----
+### Ejecutar el dashboard
 
-## 📈 Análisis de Resultados
+```bash
+Rscript dashboard.r
+```
 
-### Hallazgos Principales (del archivo `taller.r`)
+## Configuracion
 
-El análisis de las 5 gráficas revela:
+Las rutas del ETL estan en `config/LimpiezaConfig.py`.
 
-1. **Concentración Geográfica:** Las siniestros se concentran en 3-5 localidades principales
-2. **Patrones Temporales:** Existe variabilidad significativa entre meses, indicando estacionalidad
-3. **Frecuencia Horaria:** Ciertas horas del día registran mayor densidad de siniestros
-4. **Variabilidad de Severidad:** La severidad presenta distribuciones diferentes según la hora
-5. **Composición Semanal:** El día de la semana influye en el tipo y severidad de incidentes
-
-### Conclusión
-
-*Los siniestros no ocurren aleatoriamente. Existe una clara relación entre el día/hora y la severidad, así como concentración geográfica. Estas patrones pueden aprovecharse para:*
-- Asignar recursos preventivos en horarios/localidades de alto riesgo
-- Implementar estrategias de mitigación diferenciadas por día/hora
-- Priorizar investigaciones en zonas de alta concentración
-
----
-
-## 📝 Componentes del Taller Entregable
-
-El archivo `taller.r` contiene:
-
-✅ **Planteamiento del problema** (explícito en comentarios)  
-✅ **Código en R** (comentado línea por línea)  
-✅ **5 gráficas seleccionadas** (con justificación de cada una)  
-✅ **Interpretación breve** (con explicación de por qué se usa esa gráfica)  
-✅ **Conclusión final** (hallazgos principales consolidados)  
-
----
-
-## 🔍 Formato de Datos
-
-### Columnas Principales del Dataset Limpio
-
-| Columna | Tipo | Descripción |
-|---------|------|-------------|
-| `Fecha` | Date | Fecha del siniestro (YYYY-MM-DD) |
-| `Hora` | Time | Hora del siniestro (HH:MM) |
-| `Localidad` | String | Ubicación geográfica del siniestro |
-| `Severidad` | Numeric | Nivel de severidad (1-5) |
-| `Descripción` | String | Detalles del incidente |
-
-*Nota: Las columnas exactas dependen del archivo Excel original. Revisa el resumen de limpieza en consola después de ejecutar `main.py`.*
-
----
-
-## 🛠️ Configuración
-
-Todos los parámetros del proyecto se encuentran en:
-
-**`config/LimpiezaConfig.py`**
+Los valores principales son:
 
 ```python
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / 'extract' / 'files'
 INPUT_PATH = str(DATA_DIR / '3.1 NMERO DE SINIESTROS.XLSX')
 OUTPUT_PATH = str(DATA_DIR / '3.1 NMERO DE SINIESTROS_limpio.csv')
+OUTPUT_XLSX_PATH = str(DATA_DIR / '3.1 NMERO DE SINIESTROS_limpio.xlsx')
+SQLITE_DB_PATH = DATA_DIR / 'Limpieza.db'
+SQLITE_TABLE = 'siniestros_limpios'
 ```
 
-Para cambiar rutas o parámetros, edita este archivo.
+## Datos esperados
 
----
+Las columnas exactas dependen del archivo original, pero el analisis en R usa campos como estos:
 
-## 📚 Referencias
+| Columna | Uso |
+|---|---|
+| `FECHA_OCUR` | Fecha del evento |
+| `FECHA_HORA` | Fecha y hora del registro |
+| `HORA_OCURR` | Hora del siniestro |
+| `ANO_OCURRE` | Ano del siniestro |
+| `MES_OCURRE` | Mes del siniestro |
+| `DIA_OCURRE` | Dia de la semana |
+| `LOCALIDAD` | Ubicacion geografica |
+| `GRAVEDAD` | Categoria de severidad |
+| `LATITUD` / `LONGITUD` | Coordenadas para el dashboard |
+| `UPL` | Campo auxiliar usado en la limpieza |
 
-- **Matplotlib en R:** [ggplot2 Documentation](https://ggplot2.tidyverse.org/)
-- **Pandas Documentation:** [pandas.pydata.org](https://pandas.pydata.org/docs/)
-- **R Language:** [r-project.org](https://www.r-project.org/)
+## Hallazgos que resume el taller
 
----
+El archivo `taller.r` concluye que los siniestros no se distribuyen de forma uniforme: hay concentracion territorial, franjas horarias criticas y dias con mayor peso relativo de casos severos. Eso permite priorizar recursos por localidad, dia y hora.
 
-## 👤 Autor
+## Autor
 
-**Johan Camilo Mesa Rios**
+Johan Camilo Mesa Rios
 
----
+## Licencia
 
-## 📄 Licencia
+Este proyecto se distribuye bajo licencia MIT. Ver `LICENSE` para mas detalles.
 
-Este proyecto está bajo la Licencia MIT. Ver [LICENSE](LICENSE) para detalles.
+## Nota final
 
----
-
-## 💡 Notas de Uso
-
-1. **Primero ejecuta el ETL:** `python main.py` genera el CSV limpio
-2. **Luego abre R:** Usa `taller.r` para el análisis completo
-3. **Para referencia:** `graficas.r` muestra ejemplos de 15 tipos de gráficas
-
----
-
-**Última actualización:** 31 de marzo de 2026
+1. Ejecuta primero `python main.py`.
+2. Luego corre `taller.r` o `dashboard.r` sobre el CSV limpio.
+3. `graficas.r` sirve como apoyo didactico con ejemplos adicionales.
